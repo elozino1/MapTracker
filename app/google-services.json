@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "644929635812",
+    "firebase_url": "https://maptracker-2ddfe-default-rtdb.firebaseio.com",
+    "project_id": "maptracker-2ddfe",
+    "storage_bucket": "maptracker-2ddfe.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:644929635812:android:ca3cb10e008b41375173f1",
+        "android_client_info": {
+          "package_name": "com.olamachia.maptrackerweekeighttask"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "644929635812-p4d03fjanloujrpvg3461ahncmp862om.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.olamachia.maptrackerweekeighttask",
+            "certificate_hash": "5701b159d2a371043374a0385bd3a3bc071f7331"
+          }
+        },
+        {
+          "client_id": "644929635812-2pjb8gl76oelt76nhrm4n1mrp084c252.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFFwpy6q3dEfkW-5gQ_Jz3Kq580DEM060"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "644929635812-2pjb8gl76oelt76nhrm4n1mrp084c252.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
