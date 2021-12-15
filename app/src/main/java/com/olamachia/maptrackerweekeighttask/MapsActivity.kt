@@ -18,6 +18,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.database
+import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
 import com.olamachia.maptrackerweekeighttask.databinding.ActivityMapsBinding
 import com.olamachia.maptrackerweekeighttask.models.LocationModel
@@ -41,15 +42,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     //location manager
     private lateinit var locationManager: LocationManager
 
-    lateinit var peterLatLng: LatLng
-    lateinit var peterLatitude: String
-    lateinit var peterLongitude: String
-
-
     //database references
     private var database: FirebaseDatabase = FirebaseDatabase.getInstance()
-    private var zinoDatabaseReference: DatabaseReference = database.getReference("Zino")
-    private var peterDatabaseReference: DatabaseReference = database.getReference("Peter")
+    val databaseReference: DatabaseReference = database.getReference("Partners")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,12 +56,34 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        peterDatabaseReference.addValueEventListener(object: ValueEventListener {
+        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        var locationModel: LocationModel
+    }
+
+    override fun onMapReady(googleMap: GoogleMap) {
+        mMap = googleMap
+
+        retrieveCurrentLocation()
+        retrievePartnerLocation()
+
+    }
+
+    private fun retrievePartnerLocation() {
+
+        databaseReference.addValueEventListener(object: ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val peterLocation = snapshot.child("Peter").getValue(LocationModel::class.java)
-                peterLatitude = peterLocation!!.latitude
-                peterLongitude = peterLocation!!.longitude
-                peterLatLng = LatLng(peterLatitude!!.toDouble(), peterLongitude!!.toDouble())
+                val peterLatitude = peterLocation!!.latitude
+                val peterLongitude = peterLocation.longitude
+                val peterLatLng = LatLng(peterLatitude!!, peterLongitude!!)
+
+                mMap.addMarker(
+                    MarkerOptions().position(peterLatLng)
+                        .title("Na Peter be this")
+                )
+
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(peterLatLng, 16.2f))
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -75,8 +92,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         })
     }
 
-    override fun onMapReady(googleMap: GoogleMap) {
-        mMap = googleMap
+    private fun retrieveCurrentLocation() {
 
         if (ActivityCompat.checkSelfPermission(
                 this, finePermission
@@ -94,7 +110,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             return
         }
 
-        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MINTIME, MINDIST) { location ->
             latLng = LatLng(location.latitude, location.longitude)
             mMap.clear()
@@ -103,18 +118,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     .title("${location.latitude}, ${location.longitude}")
             )
 
-            mMap.addMarker(
-                MarkerOptions().position(peterLatLng)
-                    .title("$peterLatitude, $peterLongitude")
-            )
-
-            zinoDatabaseReference.child("latitude").setValue("${location.latitude}")
-            zinoDatabaseReference.child("longitude").setValue("${location.longitude}")
+            databaseReference.child("Zino").setValue(latLng)
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16.2f))
         }
-
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(peterLatLng, 16.2f))
-
-
     }
 }
