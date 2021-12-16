@@ -6,21 +6,18 @@ import android.content.pm.PackageManager
 import android.location.*
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.maps.CameraUpdateFactory
-
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.database.*
-import com.google.firebase.database.ktx.database
-import com.google.firebase.database.ktx.getValue
-import com.google.firebase.ktx.Firebase
 import com.olamachia.maptrackerweekeighttask.databinding.ActivityMapsBinding
 import com.olamachia.maptrackerweekeighttask.models.LocationModel
 
@@ -94,11 +91,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     myMap.addMarker(
                         MarkerOptions().position(peterLatLng)
                             .title("Na Peter be this")
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.peter_image))
                     )
 
                     myMap.addMarker(
                         MarkerOptions().position(myLatLng)
                             .title("$myLatitude, $myLongitude")
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.my_image))
                     )
 
                     //move camera on to marker set location
@@ -145,13 +144,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         else -> Snackbar.make(findViewById(R.id.map),
             "Location permission needed for core functionality",
-            Snackbar.LENGTH_LONG).setAction("OK"){
-            ActivityCompat.requestPermissions(
-                this@MapsActivity,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                requestCode
-            )
-        }.show()
+            Snackbar.LENGTH_LONG).show()
             }
         }
 

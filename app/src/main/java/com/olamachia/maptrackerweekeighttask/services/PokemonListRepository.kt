@@ -7,6 +7,7 @@ import retrofit2.Response
 
 class PokemonListRepository(private var iPokemonService: IPokemonService) {
 
+    //get the list of pokemon from the API
     fun getPokemonList(dataResponse: DataResponse) {
         dataResponse.onLoading()
         iPokemonService.getPokemonList(100,0).enqueue(object: Callback<ResultModel>{
@@ -16,10 +17,6 @@ class PokemonListRepository(private var iPokemonService: IPokemonService) {
 
             override fun onFailure(call: Call<ResultModel>, t: Throwable) {
                 dataResponse.onFailure(t)
-            }
-
-            fun onLoading() {
-
             }
         })
     }
@@ -31,5 +28,4 @@ interface DataResponse {
     fun onPokemonListDisplay(response: Response<ResultModel>)
     fun onFailure(t: Throwable)
     fun onLoading()
-
 }
