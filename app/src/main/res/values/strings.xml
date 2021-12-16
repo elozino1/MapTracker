@@ -3,4 +3,5 @@
     <string name="title_activity_maps">MapsActivity</string>
     <string name="track_partner_btn">track partner</string>
     <string name="my_location_tv">My Location</string>
+    <string name="pokemon_btn">pokemon</string>
 </resources>
