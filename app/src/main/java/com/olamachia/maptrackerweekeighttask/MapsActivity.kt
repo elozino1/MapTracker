@@ -1,6 +1,7 @@
 package com.olamachia.maptrackerweekeighttask
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.*
@@ -12,7 +13,6 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
@@ -20,6 +20,8 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.database.*
 import com.olamachia.maptrackerweekeighttask.databinding.ActivityMapsBinding
 import com.olamachia.maptrackerweekeighttask.models.LocationModel
+import com.olamachia.maptrackerweekeighttask.utils.checkPermissionExt
+import com.olamachia.maptrackerweekeighttask.utils.requestPermissions
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -66,25 +68,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun retrieveCurrentLocation() {
 
-        if (ActivityCompat.checkSelfPermission(
-                this, finePermission
-            ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this, coarsePermission
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            databaseReference.addValueEventListener(object: ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    //retrieve partner's location
-                    val peterLocation = snapshot.child("Peter").getValue(LocationModel::class.java)
-                    val peterLatitude = peterLocation!!.latitude
-                    val peterLongitude = peterLocation.longitude
-                    val peterLatLng = LatLng(peterLatitude!!, peterLongitude!!)
 
-                    //retrieve user's location
-                    val myLocation = snapshot.child("Zino").getValue(LocationModel::class.java)
-                    val myLatitude = myLocation!!.latitude
-                    val myLongitude = myLocation.longitude
-                    val myLatLng = LatLng(myLatitude!!, myLongitude!!)
+        if (checkPermissionExt()) {
+            databaseReference.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+
+                    val peterLatLng = getLocation(snapshot, "Peter")
+                    val zinoLatLng = getLocation(snapshot, "Zino")
 
                     //clear previously marked location and mark updated location
                     myMap.clear()
@@ -95,38 +85,47 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     )
 
                     myMap.addMarker(
-                        MarkerOptions().position(myLatLng)
-                            .title("$myLatitude, $myLongitude")
+                        MarkerOptions().position(zinoLatLng)
+                            .title("${zinoLatLng.latitude}, ${zinoLatLng.longitude}")
                             .icon(BitmapDescriptorFactory.fromResource(R.drawable.my_image))
                     )
 
                     //move camera on to marker set location
-                    myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(peterLatLng, 16.2f))
-                    myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLatLng, 16.2f))
+                    myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(zinoLatLng, 16.2f))
+                    myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(peterLatLng, 20.2f))
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@MapsActivity, "An error occurred. Please check Internet connection", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@MapsActivity,
+                        "An error occurred. Please check Internet connection",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             })
         }
     }
 
+
+    fun getLocation(snapshot: DataSnapshot, path: String): LatLng {
+        val userLocation = snapshot.child(path).getValue(LocationModel::class.java)
+        val userLatitude = userLocation!!.latitude
+        val userLongitude = userLocation.longitude
+        return LatLng(userLatitude!!, userLongitude!!)
+    }
+
     //get user's current location and save to database
+    @SuppressLint("MissingPermission")
     private fun setCurrentLocation() {
 
         //request permission
-        if (ActivityCompat.checkSelfPermission(
-                this, finePermission
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this, coarsePermission
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(this, arrayOf(finePermission, coarsePermission), requestCode)
-            return
-        }
+        requestPermissions(requestCode)
 
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MINTIME, MINDIST) { location ->
+        locationManager.requestLocationUpdates(
+            LocationManager.GPS_PROVIDER,
+            MINTIME,
+            MINDIST
+        ) { location ->
             latLng = LatLng(location.latitude, location.longitude)
 
             databaseReference.child("Zino").setValue(latLng)
@@ -139,13 +138,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when(requestCode) {
+        when (requestCode) {
             requestCode -> retrieveCurrentLocation()
 
-        else -> Snackbar.make(findViewById(R.id.map),
-            "Location permission needed for core functionality",
-            Snackbar.LENGTH_LONG).show()
-            }
+            else -> Snackbar.make(
+                findViewById(R.id.map),
+                "Location permission needed for core functionality",
+                Snackbar.LENGTH_LONG
+            ).show()
         }
+    }
 
 }
